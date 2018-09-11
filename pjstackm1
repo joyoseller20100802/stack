@@ -1,0 +1,100 @@
+// pjstackver.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <stdlib.h>
+using namespace std;
+int ans[10];
+int visited[10];
+//int mainstack[10]; //是两个数据结构混合 栈 和 线性表 一会变成栈 一会变成线性表
+// 最左边 最右边 分别是进栈出栈是栈操做 对应数据结构栈 中间的为队列 ADD BY LICHAO 20180902
+#define STACK_INIT_SIZE 100
+
+typedef struct
+{
+	int *top;
+	int *base;
+	int stacksize;
+}SqStack; 
+SqStack mainstack;
+
+bool InitStack(SqStack *s)
+{
+	s->base = (int *)malloc(STACK_INIT_SIZE*sizeof(int));
+	s->top = s->base;
+	s->stacksize = STACK_INIT_SIZE;
+	if (s->base)
+	{
+		return true;
+	}
+	return false;
+}
+bool pop(SqStack *s,int *num)
+{
+	*num = *(--s->top);
+	return true;
+}
+bool push(SqStack *s, int num)
+{
+	*(s->top++) = num;
+	return true;
+}
+void dfs()
+{
+	int cur =1;
+	SqStack *mainstack = (SqStack *) malloc(sizeof (SqStack));
+	InitStack(mainstack);
+	push(mainstack,1);
+	int n = 3;
+	while (cur>=1)
+	{
+		int flag = 0;
+		int number;
+		
+		pop(mainstack,&number);//找不到的情况比如4   // 栈上存的不是相对应的树  而是为当前节点准备的左界限
+		for (int i=number;i<=n;i++) //找当前点 ADD BY LICHAO 20180901  
+		{
+			if (visited[i] == 0)
+			{
+				push(mainstack ,i + 1); //如果找到当前点 为右兄弟做准备 右兄弟的左界限 由画图数据结构分析得 这个队列 ADD BY LICHAO 20180901 找不到的情况比如4
+				number = i;
+				flag = 1;  
+				break;
+			}
+		}
+		if (flag)  // correspoding to if pass(...)
+		{
+			if (ans[cur])
+			visited[ans[cur]]=0;
+			ans[cur] = number;                  //用当前的点 程序中只有一个
+			visited[number] = 1;
+
+			if (cur == n ) //不为空的叶子
+			{
+				  for(int i=1;i<=n;i++)
+				  cout<<ans[i]<<" ";
+				  cout<<endl;
+			}
+			else
+			{	
+				cur ++;
+				push(mainstack,1);  //如果找到当前点 为儿子做准备 不能是叶子
+			}
+		}
+		else   //如果当前节点为空 也就是空节点 ADD BY LICHAO 20180901
+		{ 
+			visited[ans[cur]] = 0;
+			ans[cur]=0;
+			cur --;
+		}
+	}	
+	
+}
+int main(int argc, char* argv[])
+{
+ 	dfs();
+	 
+	return 0;
+}
+
